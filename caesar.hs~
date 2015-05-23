@@ -1,0 +1,3 @@
+
+index :: (Char, Int)
+index = zip [a..b] [1..]
