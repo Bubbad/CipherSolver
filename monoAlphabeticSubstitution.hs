@@ -40,7 +40,8 @@ trans = do
        _      -> do
              liftIO $ putStrLn "Change into what?"
              l' <- liftIO $ getLine
-             dict %= map (\(a,b) -> if [a] == l then (a,head l') else (a,b)) 
+             updateDict l l'
+
              d' <- gets _dict
              liftIO $ putStrLn $ "The following words changed"
              liftIO $ putStrLn $ show $ sort $ filter (\(a,b) -> a /= b) (zip (words (translate d t)) (words (translate d' t)))
@@ -48,6 +49,14 @@ trans = do
              case l'' of
                 "rev" -> dict .= d >> trans
                 _     -> trans
+      where
+        updateDict :: String -> String -> Translation ()
+        updateDict [] _ = return ()
+        updateDict _ [] = return ()
+        updateDict (c:cs) (c':cs') = do
+                     dict %= map (\(a,b) -> if a == c then (a,c') else (a,b))
+                     updateDict cs cs'
+               
 
 translate   :: [(Char, Char)] -> String -> String
 translate d = map (\c -> case lookup c d of
@@ -60,7 +69,9 @@ getStatistic s = reverse $ sort $ map (\l -> ((fromIntegral 100) *(fromIntegral 
         sorted = group $ sort $ s
 
 find = do
-  cnt <- readFile "words"
+  putStrLn "Which lang? english, french, greek, italian, latin or spanish?"
+  lang <- getLine
+  cnt <- readFile $ "wordlists/" ++ lang ++ ".txt"
   putStrLn "Put word to find"
   s <- getLine
   mapM_ putStrLn $ findWord s (lines cnt)
@@ -86,3 +97,7 @@ Env {_dict = [('A','c'),('B','i'),('C','o'),('D','v'),('E','y'),('F','b'),('G','
 
 text2 :: String
 text2 = "IXDVMUFXLFEEFXSOQXYQVXSQTUIXWF*FMXYQVFJ*FXEFQUQXJFPTUFXMX*ISSFLQTUQXMXRPQEUMXUMTUIXYFSSFI*MXKFJF*FMXLQXTIEUVFXEQTEFXSOQXLQ*XVFWMTQTUQXTITXKIJ*FMUQXTQJMVX*QEYQVFQTHMXLFVQUVIXM*XEI*XLQ*XWITLIXEQTHGXJQTUQXSITEFLQVGUQX*GXKIEUVGXEQWQTHGXDGUFXTITXDIEUQXGXKFKQVXSIWQXAVPUFXWGXYQVXEQJPFVXKFVUPUQXQXSGTIESQTHGX*FXWFQFXSIWYGJTFXDQSFIXEFXGJPUFXSITXRPQEUGXIVGHFITXYFSSFI*CXC*XSCWWFTIXSOQXCXYQTCXYIESFCX*FXCKVQFXVFUQTPUFXQXKI*UCXTIEUVCXYIYYCXTQ*XWCUUFTIXLQFXVQWFXDCSQWWIXC*FXC*XDI**QXKI*IXEQWYVQXCSRPFEUCTLIXLC*X*CUIXWCTSFTIXUPUUQX*QXEUQ**QXJFCXLQX*C*UVIXYI*IXKQLQCX*CXTIUUQXQX*XTIEUVIXUCTUIXACEEIXSOQXTITXEPVJQCXDPIVXLQ*XWCVFTXEPI*IXSFTRPQXKI*UQXVCSSQEIXQXUCTUIXSCEEIX*IX*PWQXQVZXLFXEIUUIXLZX*ZX*PTZXYIFXSOQXTUVZUFXQVZKZWXTQX*Z*UIXYZEEIRPZTLIXTZYYZVKQXPTZXWITUZJTZXAVPTZXYQVX*ZXLFEUZTHZXQXYZVKQWFXZ*UZXUZTUIXRPZTUIXKQLPUZXTITXZKQZXZ*SPTZXTIFXSFXZ**QJVNWWIXQXUIEUIXUIVTIXFTXYFNTUIXSOQXLQX*NXTIKNXUQVVNXPTXUPVAIXTNSRPQXQXYQVSIEEQXLQ*X*QJTIXF*XYVFWIXSNTUIXUVQXKI*UQXF*XDQXJFVBVXSITXUPUUQX*BSRPQXBX*BXRPBVUBX*QKBVX*BXYIYYBXFTXEPEIXQX*BXYVIVBXFVQXFTXJFPXSIWB*UVPFXYFBSRPQFTDFTXSOQX*XWBVXDPXEIYVBXTIFXVFSOFPEIXX*BXYBVI*BXFTXSILFSQXQXQRPBUIV"
+
+
+{-
+[('*','*'),('A','A'),('B','B'),('C','C'),('D','D'),('E','E'),('F','F'),('G','G'),('H','H'),('I','o'),('J','J'),('K','K'),('L','L'),('M','M'),('N','N'),('O','h'),('P','P'),('Q','e'),('R','R'),('S','c'),('T','n'),('U','t'),('V','V'),('W','W'),('X',' '),('Y','Y'),('Z','Z')]-}
