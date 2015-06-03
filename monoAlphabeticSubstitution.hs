@@ -80,12 +80,18 @@ find = do
 findWord :: String -> [String] -> [String]
 findWord s ss = do getMatch ss (getSame s) 
      where 
-           getMatch :: [String] -> [[Int]] -> [String]
-           getMatch [] is = []
-           getMatch (s:ss) is = if (length s == (length (concat is))) && (and $ map (\cs -> length cs == 1) $ map (nub.map (s!!)) is) then s:getMatch ss is else getMatch ss is
-           getSame   :: String -> [[Int]]
-           getSame s = map (\ls -> snd (unzip ls)) $ groupBy (\(c,i) (c',i') -> c == c') (sort (zip s ([0..] :: [Int])))
-
+       getMatch :: [String] -> ([[Int]], [[(Char,Int)]]) -> [String]
+       getMatch [] is = []
+       getMatch (s:ss) ci@(is, ciss) = if (length s == (length (concat is) + length (concat ciss))) && (and $ map (\cs -> length cs == 1) $ map (nub.map (s!!)) is) && (and $ concat $ (map (map (\(c,i) -> s!!i == c)) ciss)) then s:getMatch ss ci else getMatch ss ci
+       getSame :: String -> ([[Int]], [[(Char,Int)]])
+       getSame s = do
+         let ciss = getSame' s
+         let cs  = filter (\cis -> isAsciiLower(s!!(snd $ cis!!0))) ciss
+         let is  = map (snd.unzip) (ciss \\ cs)
+         (is, cs)
+         
+       getSame'   :: String -> [[(Char, Int)]]
+       getSame' s =  groupBy (\(c,i) (c',i') -> c == c') (sort (zip s ([0..] :: [Int])))
            
 text1 :: String
 text1 = "BT JPX RMLX PCUV AMLX ICVJP IBTWXVR CI M LMT'R PMTN, MTN YVCJX CDXV MWMBTRJ JPX AMTNGXRJBAH UQCT JPX QGMRJXV CI JPX YMGG CI JPX HBTW'R QMGMAX; MTN JPX HBTW RMY JPX QMVJ CI JPX PMTN JPMJ YVCJX. JPXT JPX HETW'R ACUTJXTMTAX YMR APMTWXN, MTN PBR JPCUWPJR JVCUFGXN PBL, RC JPMJ JPX SCBTJR CI PBR GCBTR YXVX GCCRXN, MTN PBR HTX XR RLCJX CTX MWMBTRJ MTCJPXV. JPX HBTW AVBXN MGCUN JC FVBTW BT JPX MRJVCGCWXVR, JPX APMGNXMTR, MTN JPX RCCJPRMEXVR. MTN JPX HBTW RQMHX, MTN RMBN JC JPX YBRX LXT CI FMFEGCT, YPCR CXDXV RPMGG VXMN JPBR YVBJBTW, MTN RPCY LX JPX BTJXVQVXJMJBCT JPXVXCI, RPMGG FX AGCJPXN YBJP RAMVGXJ, MTN PMDX M APMBT CI WCGN MFCUJ PBR TXAH, MTN RPMGG FX JPX JPBVN VUGXV BT JPX HBTWNCL. JPXT AMLX BT MGG JPX HBTW'R YBRX LXT; FUJ JPXE ACUGN TCJ VXMN JPX YVBJBTW, TCV LMHX HTCYT JC JPX HBTW JPX BTJXVQVXJMJBCT JPXVXCI. JPXT YMR HBTW FXGRPMOOMV WVXMJGE JVCUFGXN, MTN PBR ACUTJXTMTAX YMR APMTWXN BT PBL, MTN PBR GCVNR YXVX MRJCTBRPXN. TCY JPX KUXXT, FE VXMRCT CI JPX YCVNR CI JPX HBTW MTN PBR GCVNR, AMLX BTJC JPX FMTKUXJ  PCURX; MTN JPX KUXXT RQMHX MTN RMBN, C HBTW, GBDX ICVXDXV; GXJ TCJ JPE JPCUWPJR JVCUFGX JPXX, TCV GXJ JPE ACUTJXTMTAX FX APMTWXN; JPXVX BR M LMT BT JPE HBTWNCL, BT YPCL BR JPX RQBVBJ CI JPX PCGE WCNR; MTN BT JPX NMER CI JPE IMJPXV GBWPJ MTN UTNXVRJMTNBTW MTN YBRNCL, GBHX JPX YBRNCL CI JPX WCNR, YMR ICUTN BT PBL; YPCL JPX HBTW TXFUAPMNTXOOMV JPE IMJPXV, JPX HBTW, B RME, JPE IMJPXV, LMNX LMRJXV CI JPX LMWBABMTR, MRJVCGCWXVR, APMGNXMTR, MTN RCCJPRMEXVR; ICVMRLUAP MR MT XZAXGGXTJ RQBVBJ, MTN HTCYGXNWX, MTN UTNXVRJMTNBTW, BTJXVQVXJBTW CI NVXMLR, MTN RPCYBTW CI PMVN RXTJXTAXR, MTN NBRRCGDBTW CI NCUFJR, YXVX ICUTN BT JPX RMLX NMTBXG, YPCL JPX HBTW TMLXN FXGJXRPMOOMV; TCY GXJ NMTBXG FX AMGGXN, MTN PX YBGG RPCY JPX BTJXVQVXJMJBCT. JPX IBVRJ ACNXYCVN BR CJPXGGC."
@@ -100,4 +106,7 @@ text2 = "IXDVMUFXLFEEFXSOQXYQVXSQTUIXWF*FMXYQVFJ*FXEFQUQXJFPTUFXMX*ISSFLQTUQXMXR
 
 
 {-
-[('*','*'),('A','A'),('B','B'),('C','C'),('D','D'),('E','E'),('F','F'),('G','G'),('H','H'),('I','o'),('J','J'),('K','K'),('L','L'),('M','M'),('N','N'),('O','h'),('P','P'),('Q','e'),('R','R'),('S','c'),('T','n'),('U','t'),('V','V'),('W','W'),('X',' '),('Y','Y'),('Z','Z')]-}
+[('*','*'),('A','A'),('B','B'),('C','C'),('D','D'),('E','E'),('F','F'),('G','G'),('H','H'),('I','o'),('J','J'),('K','K'),('L','L'),('M','M'),('N','N'),('O','h'),('P','P'),('Q','e'),('R','R'),('S','c'),('T','n'),('U','t'),('V','V'),('W','W'),('X',' '),('Y','Y'),('Z','Z')]
+
+
+[('*','r'),('A','A'),('B','B'),('C','C'),('D','D'),('E','l'),('F','a'),('G','G'),('H','H'),('I','o'),('J','J'),('K','K'),('L','m'),('M','M'),('N','N'),('O','h'),('P','a'),('Q','e'),('R','R'),('S','t'),('T','n'),('U','t'),('V','r'),('W','W'),('X',' '),('Y','p'),('Z','Z')]-}
